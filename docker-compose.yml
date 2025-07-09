@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: weatherdb
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Spring Boot
+  backend:
+    build: ./backend
+    container_name: weather_backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/weather_app
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  # Frontend Nginx
+  frontend:
+    build: ./frontend
+    container_name: weather_frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
