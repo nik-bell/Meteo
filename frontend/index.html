@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3436;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #2d3436;
+            font-size: 0.9em;
+        }
+
+        input {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            width: 150px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #74b9ff;
+        }
+
+        button {
+            background: linear-gradient(45deg, #00b894, #00cec9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,184,148,0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,184,148,0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: #74b9ff;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 30px 0;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .data-table {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .success {
+            background: #51cf66;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            input {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ Weather App</h1>
+        
+        <div class="controls">
+            <div class="input-group">
+                <label for="city">Città:</label>
+                <input type="text" id="city" placeholder="es. Milano" value="Milano">
+            </div>
+            
+            <div class="input-group">
+                <label for="latitude">Latitudine:</label>
+                <input type="number" id="latitude" placeholder="45.4642" value="45.4642" step="0.0001">
+            </div>
+            
+            <div class="input-group">
+                <label for="longitude">Longitudine:</label>
+                <input type="number" id="longitude" placeholder="9.1900" value="9.1900" step="0.0001">
+            </div>
+            
+            <button onclick="fetchWeatherData()" id="fetchBtn">
+                Ottieni Dati Meteo
+            </button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            Caricamento dati meteo...
+        </div>
+
+        <div id="message"></div>
+
+        <div class="chart-container">
+            <canvas id="weatherChart"></canvas>
+        </div>
+
+        <div class="data-table">
+            <table id="weatherTable">
+                <thead>
+                    <tr>
+                        <th>Città</th>
+                        <th>Temperatura (°C)</th>
+                        <th>Umidità (%)</th>
+                        <th>Velocità Vento (km/h)</th>
+                        <th>Data/Ora</th>
+                    </tr>
+                </thead>
+                <tbody id="weatherTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let weatherChart = null;
+        const API_BASE_URL = '/api/weather';
+
+        // Carica i dati all'avvio
+        window.onload = function() {
+            loadAllWeatherData();
+        };
+
+        async function fetchWeatherData() {
+            const city = document.getElementById('city').value;
+            const latitude = parseFloat(document.getElementById('latitude').value);
+            const longitude = parseFloat(document.getElementById('longitude').value);
+
+            if (!city || isNaN(latitude) || isNaN(longitude)) {
+                showMessage('Inserisci tutti i campi correttamente!', 'error');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const fetchBtn = document.getElementById('fetchBtn');
+            
+            loading.style.display = 'block';
+            fetchBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/fetch?city=${encodeURIComponent(city)}&latitude=${latitude}&longitude=${longitude}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showMessage(`Dati meteo per ${city} aggiornati con successo!`, 'success');
+                    loadAllWeatherData();
+                } else {
+                    showMessage('Errore nel recupero dei dati meteo', 'error');
+                }
+            } catch (error) {
+                showMessage('Errore di connessione: ' + error.message, 'error');
+            } finally {
+                loading.style.display = 'none';
+                fetchBtn.disabled = false;
+            }
+        }
+
+        async function loadAllWeatherData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/all`);
+                const data = await response.json();
+                
+                updateTable(data);
+                updateChart(data);
+            } catch (error) {
+                showMessage('Errore nel caricamento dei dati: ' + error.message, 'error');
+            }
+        }
+
+        function updateTable(data) {
+            const tableBody = document.getElementById('weatherTableBody');
+            tableBody.innerHTML = '';
+
+            data.forEach(item => {
+                const row = tableBody.insertRow();
+                row.insertCell(0).textContent = item.city;
+                row.insertCell(1).textContent = item.temperature.toFixed(1);
+                row.insertCell(2).textContent = item.humidity.toFixed(1);
+                row.insertCell(3).textContent = item.windSpeed.toFixed(1);
+                row.insertCell(4).textContent = new Date(item.timestamp).toLocaleString('it-IT');
+            });
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('weatherChart').getContext('2d');
+            
+            if (weatherChart) {
+                weatherChart.destroy();
+            }
+
+            // Raggruppa per città e prendi gli ultimi 10 dati
+            const cityData = {};
+            data.forEach(item => {
+                if (!cityData[item.city]) {
+                    cityData[item.city] = [];
+                }
+                cityData[item.city].push(item);
+            });
+
+            // Prendi i dati più recenti per il grafico
+            const recentData = data.slice(0, 10).reverse();
+            
+            const labels = recentData.map(item => 
+                `${item.city} - ${new Date(item.timestamp).toLocaleDateString('it-IT')}`
+            );
+            
+            weatherChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: recentData.map(item => item.temperature),
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Umidità (%)',
+                        data: recentData.map(item => item.humidity),
+                        borderColor: '#74b9ff',
+                        backgroundColor: 'rgba(116, 185, 255, 0.1)',
+                        yAxisID: 'y1'
+                    }, {
+                        label: 'Velocità Vento (km/h)',
+                        data: recentData.map(item => item.windSpeed),
+                        borderColor: '#00b894',
+                        backgroundColor: 'rgba(0, 184, 148, 0.1)',
+                        yAxisID: 'y2'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Dati Meteo Recenti'
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Rilevazioni'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Temperatura (°C)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Umidità (%)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        },
+                        y2: {
+                            type: 'linear',
+                            display: false,
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = message;
+            messageDiv.className = type;
+            
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+                messageDiv.className = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
