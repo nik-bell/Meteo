@@ -1,4 +1,4 @@
-package it.weather.demo;
+package it.weather.app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,19 +1,20 @@
-version: '3.8'
+
 
 services:
   db:
     image: mysql:8
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: weatherdb
+      MYSQL_USER : weather
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: weather_app
     ports:
-      - "3306:3306"
+      - "3306:3307"
     networks:
       - app-network
     volumes:
-      - db_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,8 +26,8 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/weather_app
-      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/weather_app
+      SPRING_DATASOURCE_USERNAME: weather
       SPRING_DATASOURCE_PASSWORD: password
     ports:
       - "8080:8080"
@@ -45,7 +46,7 @@ services:
       - app-network
 
 volumes:
-  postgres_data:
+  mysql_data:
 
 networks:
   app-network:

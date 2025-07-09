@@ -1,10 +1,11 @@
 
-package it.weather.service;
+package it.weather.app.service;
 
-import it.fasterxml.jackson.databind.JsonNode;
-import it.fasterxml.jackson.databind.ObjectMapper;
-import it.weather.model.Weather;
-import it.weather.repository.WeatherRepository;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import it.weather.app.model.Weather;
+import it.weather.app.repository.WeatherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;

@@ -1,10 +1,12 @@
-package it.weather.model;
+package it.weather.app.model;
+
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "weather_data")
+@Table(name = "weather")
 public class Weather {
     
     @Id

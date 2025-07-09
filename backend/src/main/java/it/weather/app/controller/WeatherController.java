@@ -1,9 +1,9 @@
 
 
-package it.weather.controller;
+package it.weather.app.controller;
 
-import it.weather.model.Weather;
-import it.weather.service.WeatherService;
+import it.weather.app.model.Weather;
+import it.weather.app.service.WeatherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

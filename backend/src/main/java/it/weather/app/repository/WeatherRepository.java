@@ -1,20 +1,19 @@
 
-package it.weather.repository;
+package it.weather.app.repository;
 
-import it.weather.model.Weather;
+import it.weather.app.model.Weather;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
-public interface WeatherRepository {
+public interface WeatherRepository extends JpaRepository<Weather, String> {
 
     List<Weather> findByCityOrderByTimestampDesc(String city);
     
-    @Query("SELECT w FROM WeatherData w WHERE w.city = ?1 ORDER BY w.timestamp DESC")
+    @Query("SELECT w FROM Weather w WHERE w.city = ?1 ORDER BY w.timestamp DESC")
     List<Weather> findLatestByCityLimit(String city);
     
-    @Query("SELECT w FROM WeatherData w ORDER BY w.timestamp DESC")
+    @Query("SELECT w FROM Weather w ORDER BY w.timestamp DESC")
     List<Weather> findAllOrderByTimestampDesc();
 
 }
