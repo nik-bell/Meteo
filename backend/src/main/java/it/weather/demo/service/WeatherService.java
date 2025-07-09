@@ -3,8 +3,8 @@ package it.weather.service;
 
 import it.fasterxml.jackson.databind.JsonNode;
 import it.fasterxml.jackson.databind.ObjectMapper;
-import it.weather.model.WeatherData;
-import it.weather.repository.WeatherDataRepository;
+import it.weather.model.Weather;
+import it.weather.repository.WeatherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,12 +15,12 @@ import java.util.List;
 public class WeatherService {
 
     @Autowired
-    private WeatherDataRepository repository;
+    private WeatherRepository repository;
     
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     
-    public WeatherData fetchAndSaveWeatherData(String city, double latitude, double longitude) {
+    public Weather fetchAndSaveWeatherData(String city, double latitude, double longitude) {
         try {
             // Chiama l'API OpenMeteo
             String url = String.format(
@@ -41,7 +41,7 @@ public class WeatherService {
             double humidity = hourly.get("relativehumidity_2m").get(0).asDouble();
             
             // Salva nel database
-            WeatherData weatherData = new WeatherData(city, temperature, humidity, windSpeed);
+            Weather weatherData = new Weather(city, temperature, humidity, windSpeed);
             return repository.save(weatherData);
             
         } catch (Exception e) {
@@ -49,11 +49,11 @@ public class WeatherService {
         }
     }
     
-    public List<WeatherData> getAllWeatherData() {
+    public List<Weather> getAllWeatherData() {
         return repository.findAllOrderByTimestampDesc();
     }
     
-    public List<WeatherData> getWeatherDataByCity(String city) {
+    public List<Weather> getWeatherDataByCity(String city) {
         return repository.findByCityOrderByTimestampDesc(city);
     }
 

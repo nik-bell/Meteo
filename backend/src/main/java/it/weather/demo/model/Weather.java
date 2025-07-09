@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "weather_data")
-public class WeatherData {
+public class Weather {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,9 +27,9 @@ public class WeatherData {
     private LocalDateTime timestamp;
     
     // Costruttori
-    public WeatherData() {}
+    public Weather() {}
     
-    public WeatherData(String city, Double temperature, Double humidity, Double windSpeed) {
+    public Weather(String city, Double temperature, Double humidity, Double windSpeed) {
         this.city = city;
         this.temperature = temperature;
         this.humidity = humidity;

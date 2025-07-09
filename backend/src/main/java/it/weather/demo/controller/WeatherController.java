@@ -2,7 +2,7 @@
 
 package it.weather.controller;
 
-import it.weather.model.WeatherData;
+import it.weather.model.Weather;
 import it.weather.service.WeatherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +20,13 @@ public class WeatherController {
     private WeatherService weatherService;
     
     @PostMapping("/fetch")
-    public ResponseEntity<WeatherData> fetchWeatherData(
+    public ResponseEntity<Weather> fetchWeatherData(
             @RequestParam String city,
             @RequestParam double latitude,
             @RequestParam double longitude) {
         
         try {
-            WeatherData weatherData = weatherService.fetchAndSaveWeatherData(city, latitude, longitude);
+            Weather weatherData = weatherService.fetchAndSaveWeatherData(city, latitude, longitude);
             return ResponseEntity.ok(weatherData);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -34,14 +34,14 @@ public class WeatherController {
     }
     
     @GetMapping("/all")
-    public ResponseEntity<List<WeatherData>> getAllWeatherData() {
-        List<WeatherData> data = weatherService.getAllWeatherData();
+    public ResponseEntity<List<Weather>> getAllWeatherData() {
+        List<Weather> data = weatherService.getAllWeatherData();
         return ResponseEntity.ok(data);
     }
     
     @GetMapping("/city/{city}")
-    public ResponseEntity<List<WeatherData>> getWeatherDataByCity(@PathVariable String city) {
-        List<WeatherData> data = weatherService.getWeatherDataByCity(city);
+    public ResponseEntity<List<Weather>> getWeatherDataByCity(@PathVariable String city) {
+        List<Weather> data = weatherService.getWeatherDataByCity(city);
         return ResponseEntity.ok(data);
     }
     
