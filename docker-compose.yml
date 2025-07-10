@@ -3,12 +3,14 @@
 services:
   db:
     image: mysql:8.0.36
+    container_name: db
     environment:
+      MYSQL_ROOT_PASSWORD : root
       MYSQL_USER : weather
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: weather_app
     ports:
-      - "3307:3306"
+      - "3306:3306"
     networks:
       - app-network
     volumes:
@@ -24,7 +26,8 @@ services:
     build: ./backend
     container_name: weather_backend
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/weather_app
       SPRING_DATASOURCE_USERNAME: weather
@@ -33,6 +36,7 @@ services:
       - "8081:8080"
     networks:
       - app-network
+    restart: unless-stopped
 
   # Frontend Nginx
   frontend:
@@ -44,6 +48,7 @@ services:
       - "3001:80"
     networks:
       - app-network
+    restart: unless-stopped
 
 volumes:
   mysql_data:

@@ -4,9 +4,12 @@ package it.weather.app.repository;
 import it.weather.app.model.Weather;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-public interface WeatherRepository extends JpaRepository<Weather, String> {
+
+@Repository
+public interface WeatherRepository extends JpaRepository<Weather, Long> {
 
     List<Weather> findByCityOrderByTimestampDesc(String city);
     
