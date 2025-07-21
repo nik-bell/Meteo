@@ -10,7 +10,7 @@ services:
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: weather_app
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - app-network
     volumes:
