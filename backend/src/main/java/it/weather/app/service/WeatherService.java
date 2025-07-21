@@ -23,9 +23,9 @@ public class WeatherService {
     
     public Weather fetchAndSaveWeatherData(String city, double latitude, double longitude) {
         try {
-            // Chiama l'API OpenMeteo
+            // Chiama l'API OpenMeteo con i parametri corretti
             String url = String.format(
-                "https://api.open-meteo.com/v1/forecast?latitude=%.2f&longitude=%.2f&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m",
+                "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m&forecast_days=1",
                 latitude, longitude
             );
 
@@ -36,15 +36,27 @@ public class WeatherService {
 
             JsonNode jsonNode = objectMapper.readTree(response);
 
-            // Estrai i dati dal JSON usando la nuova struttura API
-            JsonNode current = jsonNode.get("current");
-            if (current == null) {
-                throw new RuntimeException("No current weather data found in API response");
+            // Estrai i dati dal JSON usando la struttura API corretta
+            JsonNode hourly = jsonNode.get("hourly");
+            if (hourly == null) {
+                throw new RuntimeException("No hourly weather data found in API response");
             }
 
-            double temperature = current.get("temperature_2m").asDouble();
-            double humidity = current.get("relative_humidity_2m").asDouble();
-            double windSpeed = current.get("wind_speed_10m").asDouble();
+            // Prendi i dati più recenti (ora corrente)
+            JsonNode temperatureArray = hourly.get("temperature_2m");
+            JsonNode humidityArray = hourly.get("relative_humidity_2m");
+            JsonNode windSpeedArray = hourly.get("wind_speed_10m");
+
+            if (temperatureArray == null || humidityArray == null || windSpeedArray == null) {
+                throw new RuntimeException("Missing weather data in API response");
+            }
+
+            // Trova l'indice dell'ora corrente o la più vicina
+            int currentIndex = Math.min(temperatureArray.size() - 1, java.time.LocalDateTime.now().getHour());
+            
+            double temperature = temperatureArray.get(currentIndex).asDouble();
+            double humidity = humidityArray.get(currentIndex).asDouble();
+            double windSpeed = windSpeedArray.get(currentIndex).asDouble();
 
             System.out.println("Parsed weather data - Temperature: " + temperature +
                     ", Humidity: " + humidity + ", Wind Speed: " + windSpeed);
