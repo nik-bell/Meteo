@@ -17,8 +17,8 @@ services:
       - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 10s
       retries: 5
 
   # Backend Spring Boot
@@ -32,8 +32,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/weather_app
       SPRING_DATASOURCE_USERNAME: weather
       SPRING_DATASOURCE_PASSWORD: password
+      MYSQL_PORT: 3306
     ports:
-      - "8081:8080"
+      - "8080:8080"
     networks:
       - app-network
     restart: unless-stopped
@@ -45,7 +46,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "3001:80"
+      - "3000:80"
     networks:
       - app-network
     restart: unless-stopped
